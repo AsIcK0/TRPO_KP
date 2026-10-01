@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Учёт входящей корреспонденции</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='3' fill='none' stroke='%232c4a9a' stroke-width='3'/%3E%3Cpath d='M9 12h14M9 17h14M9 22h8' stroke='%232c4a9a' stroke-width='2.5'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/ui/styles.css">
+  <script type="module" src="/ui/app.js"></script>
+</head>
+<body>
+  <!-- Экран входа -->
+  <main id="login-view" class="login" hidden>
+    <form id="login-form" class="login-panel" novalidate>
+      <h1>Учёт входящей корреспонденции</h1>
+      <p>Войдите под своей учётной записью.</p>
+      <div id="login-error" class="form-alert" role="alert" hidden></div>
+      <div class="field">
+        <label for="login-input">Логин</label>
+        <input id="login-input" name="login" type="text" autocomplete="username" required>
+        <div class="field-error"></div>
+      </div>
+      <div class="field" style="margin-top: 12px">
+        <label for="password-input">Пароль</label>
+        <input id="password-input" name="password" type="password" autocomplete="current-password" required>
+        <div class="field-error"></div>
+      </div>
+      <button class="btn btn-primary" type="submit">Войти</button>
+    </form>
+  </main>
+
+  <!-- Рабочая область -->
+  <div id="app-view" class="app" hidden>
+    <header class="topbar">
+      <a class="brand" href="#/">Учёт входящей корреспонденции<small>Журнал регистрации и контроль исполнения</small></a>
+      <div class="user-box">
+        <div>
+          <div id="user-name" class="name"></div>
+          <div id="user-role" class="role"></div>
+        </div>
+        <button id="logout-btn" class="btn btn-sm" type="button">Выйти</button>
+      </div>
+    </header>
+    <div class="layout">
+      <nav id="sidenav" class="sidenav" aria-label="Разделы"></nav>
+      <main id="content" class="content" tabindex="-1"></main>
+    </div>
+  </div>
+
+  <!-- Первичная загрузка -->
+  <div id="boot" class="state-box" style="background: none; padding-top: 30vh">
+    <div class="spinner"></div>
+    Загрузка…
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <div id="modal-root"></div>
+
+  <noscript>Для работы интерфейса включите JavaScript.</noscript>
+</body>
+</html>

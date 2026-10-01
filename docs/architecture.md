@@ -1,12 +1,12 @@
-# Архитектура backend
+# Архитектура
 
-Клиент-серверная система: REST API на FastAPI, данные в PostgreSQL, файлы в S3-совместимом хранилище MinIO. Все три компонента работают в отдельных контейнерах Docker Compose. Frontend в объем работ не входит; API проверяется через Swagger UI (`/docs`) и интеграционные тесты.
+Клиент-серверная система: REST API на FastAPI, данные в PostgreSQL, файлы в S3-совместимом хранилище MinIO. Все три компонента работают в отдельных контейнерах Docker Compose. Веб-интерфейс — статические файлы (`ui/`), которые раздает тот же контейнер backend по адресу `/ui`; данные он получает только через REST API. Кроме того, API доступен через Swagger UI (`/docs`) и проверяется интеграционными тестами.
 
 ## Компоненты и слои
 
 ```mermaid
 flowchart TB
-    client["Клиент: Swagger UI, httpx-тесты, будущий frontend"]
+    client["Клиенты: веб-интерфейс /ui (Vanilla JS), Swagger UI, httpx-тесты"]
 
     subgraph backend["Контейнер backend (FastAPI + uvicorn)"]
         direction TB
@@ -71,6 +71,14 @@ sequenceDiagram
     S-->>C: 200 DocumentDetail (реквизиты, резолюции, вложения, история)
 ```
 
+## Веб-интерфейс
+
+Каталог `ui/` — четыре файла без сборки: `index.html`, `api.js`, `app.js`, `styles.css`. FastAPI монтирует его через `StaticFiles` (`app/main.py`). Это единственное изменение backend ради интерфейса; корень `/` перенаправляет на `/ui/`.
+
+- `api.js` — единственное место, где выполняются HTTP-запросы. Он подставляет `Authorization: Bearer`, превращает ответы `{detail, code, field}` в `ApiError` и при 401 очищает токен.
+- `app.js` — маршрутизация по `#`-адресам (`#/documents`, `#/documents/{id}?tab=…`, `#/correspondents`, `#/reports`, `#/users`, `#/dictionaries`), экраны ролей, формы, валидация и уведомления. Разметка строится через `document.createElement`, данные выводятся как текст (без `innerHTML`), поэтому HTML в данных не исполняется.
+- Видимость разделов и кнопок вычисляется из разрешений `GET /auth/me`. Это удобство, а не защита: права и переходы статусов проверяет backend, интерфейс лишь показывает его ответ.
+
 ## Сквозные механизмы
 
 | Механизм | Реализация |
@@ -113,7 +121,7 @@ flowchart LR
 
 ```
 app/
-  main.py               приложение, lifespan, OpenAPI-теги
+  main.py               приложение, lifespan, OpenAPI-теги, монтирование /ui
   core/                 config (Pydantic Settings), errors, handlers (формат ошибок), logging
   db/                   Base (naming convention), engine и сессии
   models/               ORM-модели (entities.py) и перечисления (enums.py)
@@ -132,6 +140,7 @@ scripts/                seed.py, entrypoint.sh, backup/restore
 tests/unit/             чистая логика
 tests/integration/      REST API + PostgreSQL + MinIO
 docs/                   диаграммы и документация
+ui/                     веб-интерфейс: index.html, api.js, app.js, styles.css
 ```
 
 ## Совместимость с Draw.io

@@ -1,4 +1,4 @@
-## syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1
 
 # --- стадия сборки: wheel-пакеты (если для Python 3.14 нет готовой сборки — компилируются здесь) ---
 FROM python:3.14-slim AS builder

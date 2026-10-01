@@ -1,7 +1,10 @@
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api.v1 import health
 from app.api.v1.router import api_router
@@ -12,6 +15,9 @@ from app.db.session import get_engine
 from app.storage.s3 import get_storage
 
 logger = logging.getLogger(__name__)
+
+# веб-интерфейс (Vanilla JS, без сборки): каталог ui/ в корне проекта
+UI_DIR = Path(__file__).resolve().parent.parent / "ui"
 
 TAGS = [
     {"name": "auth", "description": "Вход и текущий пользователь"},
@@ -54,6 +60,14 @@ def create_app() -> FastAPI:
     register_exception_handlers(app)
     app.include_router(api_router, prefix="/api/v1")
     app.include_router(health.router, include_in_schema=False)  # /health — для Docker и балансировщиков
+
+    # веб-интерфейс: статические файлы; все данные он получает через REST API /api/v1
+    app.mount("/ui", StaticFiles(directory=UI_DIR, html=True), name="ui")
+
+    @app.get("/", include_in_schema=False)
+    async def root() -> RedirectResponse:
+        return RedirectResponse(url="/ui/")
+
     return app
 
 
